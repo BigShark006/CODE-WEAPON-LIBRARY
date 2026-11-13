@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản trị - BIGSHARK WEAPON CODES</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>" />
+  <link rel="stylesheet" href="/src/css/main.css" />
+  <link rel="stylesheet" href="/src/css/admin.css" />
+</head>
+<body>
+
+  <!-- Page Loading Overlay -->
+  <div class="page-loading" id="pageLoading">
+    <div class="loading-spinner"></div>
+    <p style="color:var(--text-secondary);font-size:0.875rem">Đang xác thực...</p>
+  </div>
+
+  <div class="admin-page" id="adminContent" style="display:none">
+
+    <!-- ADMIN HEADER -->
+    <header class="admin-header">
+      <div class="admin-header-inner">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div class="logo-block">
+            <span class="logo-main" style="font-size:1.1rem">BIGSHARK</span>
+            <span class="logo-sub">WEAPON CODES</span>
+          </div>
+          <span class="admin-title">Khu vực quản trị</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <a href="/" class="btn btn-secondary" style="font-size:0.8rem;padding:7px 14px">
+            ← Trang chính
+          </a>
+          <button class="btn btn-secondary" id="btnLogout" style="font-size:0.8rem;padding:7px 14px">
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ADMIN MAIN -->
+    <main class="admin-main">
+
+      <!-- Stats -->
+      <div class="admin-stats">
+        <div class="stat-card">
+          <div class="stat-value" id="statTotal">—</div>
+          <div class="stat-label">Tổng số súng</div>
+        </div>
+      </div>
+
+      <!-- Global alert -->
+      <div class="alert alert-hidden" id="mainAlert" role="alert" style="margin-bottom:16px"></div>
+
+      <!-- Panel layout: List + Form -->
+      <div class="admin-panel">
+
+        <!-- ======= Weapons List ======= -->
+        <div class="admin-list-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Danh sách súng</h2>
+            <button class="btn btn-primary" id="btnAddNew" style="font-size:0.8rem;padding:8px 16px">
+              + Thêm mới
+            </button>
+          </div>
+
+          <div class="weapons-table-wrapper">
+            <!-- Loading state -->
+            <div id="tableLoading" style="text-align:center;padding:48px 16px;color:var(--text-secondary)">
+              <div class="loading-spinner" style="display:inline-block;margin-bottom:12px"></div>
+              <p style="font-size:0.875rem">Đang tải...</p>
+            </div>
+
+            <!-- Data table -->
+            <table class="weapons-table" id="weaponsTable" style="display:none">
+              <thead>
+                <tr>
+                  <th style="width:35%">Tên súng</th>
+                  <th>Code</th>
+                  <th style="text-align:right;width:100px">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="weaponsTableBody"></tbody>
+            </table>
+
+            <!-- Empty state -->
+            <div class="empty-table" id="tableEmpty" style="display:none">
+              <p>Chưa có súng nào. Thêm súng đầu tiên!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======= Form Panel ======= -->
+        <div class="admin-form-panel">
+          <h3 class="form-panel-title" id="formPanelTitle">Thêm súng mới</h3>
+
+          <div class="alert alert-hidden" id="formAlert" role="alert"></div>
+
+          <form id="weaponForm" novalidate>
+            <input type="hidden" id="editingId" />
+
+            <div class="form-group">
+              <label class="form-label" for="weaponName">Tên súng <span style="color:var(--danger)">*</span></label>
+              <input
+                type="text"
+                class="form-input"
+                id="weaponName"
+                placeholder="Ví dụ: AK-74M"
+                maxlength="200"
+                autocomplete="off"
+                required
+              />
+              <div class="form-error" id="weaponNameError"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="weaponCode">Code súng <span style="color:var(--danger)">*</span></label>
+              <textarea
+                class="form-textarea"
+                id="weaponCode"
+                placeholder="Dán code cấu hình súng vào đây..."
+                maxlength="5000"
+                required
+              ></textarea>
+              <div class="form-error" id="weaponCodeError"></div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="formSubmitBtn">Lưu</button>
+              <button type="button" class="btn btn-secondary" id="formCancelBtn">Hủy</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ======= Delete Confirm Modal ======= -->
+  <div class="modal-overlay hidden" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-card">
+      <h3 class="modal-title" id="deleteModalTitle">Xác nhận xóa</h3>
+      <p class="modal-message" id="deleteModalMessage">
+        Bạn có chắc chắn muốn xóa súng này không? Hành động này không thể hoàn tác.
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modalCancelBtn">Hủy</button>
+        <button class="btn btn-danger" id="modalConfirmBtn">Xóa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <script type="module">
+    import { requireAdmin, signOut, onAuthStateChange } from '/src/js/auth.js';
+    import { adminFetchWeapons, adminInsertWeapon, adminUpdateWeapon, adminDeleteWeapon } from '/src/js/admin.js';
+
+    // ============================================================
+    // TOAST NOTIFICATIONS
+    // ============================================================
+    function showToast(message, type = 'success', duration = 3500) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠';
+      toast.innerHTML = `<span>${icon}</span><span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(120%)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 320);
+      }, duration);
+    }
+
+    // ============================================================
+    // ALERTS
+    // ============================================================
+    function showMainAlert(message, type = 'error') {
+      const el = document.getElementById('mainAlert');
+      el.textContent = message;
+      el.className = `alert alert-${type}`;
+    }
+
+    function hideMainAlert() {
+      document.getElementById('mainAlert').className = 'alert alert-hidden';
+    }
+
+    function showFormAlert(message, type = 'error') {
+      const el = document.getElementById('formAlert');
+      el.textContent = message;
+      el.className = `alert alert-${type}`;
+    }
+
+    function hideFormAlert() {
+      document.getElementById('formAlert').className = 'alert alert-hidden';
+    }
+
+    // ============================================================
+    // UTILS
+    // ============================================================
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttr(str) {
+      return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // ============================================================
+    // AUTH GUARD — must run before revealing UI
+    // ============================================================
+    let isAuthorized = false;
+    try {
+      isAuthorized = await requireAdmin('/admin/login.html');
+    } catch (e) {
+      window.location.href = '/admin/login.html';
+    }
+    if (!isAuthorized) {
+      // requireAdmin handles redirect
+      throw new Error('Not authorized');
+    }
+
+    // Reveal admin UI
+    document.getElementById('pageLoading').classList.add('hidden');
+    document.getElementById('adminContent').style.display = 'block';
+
+    // Watch for session expiry (e.g. token revoked)
+    onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        window.location.href = '/admin/login.html';
+      }
+    });
+
+    // Logout
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      try {
+        await signOut();
+        window.location.href = '/admin/login.html';
+      } catch (e) {
+        showToast('Lỗi đăng xuất: ' + e.message, 'error');
+      }
+    });
+
+    // ============================================================
+    // WEAPON LIST STATE
+    // ============================================================
+    let weapons = [];
+    let deleteTargetId = null;
+
+    async function loadWeapons() {
+      document.getElementById('tableLoading').style.display = 'block';
+      document.getElementById('weaponsTable').style.display = 'none';
+      document.getElementById('tableEmpty').style.display = 'none';
+      hideMainAlert();
+
+      try {
+        weapons = await adminFetchWeapons();
+        document.getElementById('statTotal').textContent = weapons.length;
+        renderTable();
+      } catch (err) {
+        showMainAlert('Không tải được dữ liệu: ' + err.message);
+      } finally {
+        document.getElementById('tableLoading').style.display = 'none';
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('weaponsTableBody');
+      const table = document.getElementById('weaponsTable');
+      const empty = document.getElementById('tableEmpty');
+
+      if (weapons.length === 0) {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        return;
+      }
+
+      table.style.display = 'table';
+      empty.style.display = 'none';
+
+      tbody.innerHTML = weapons.map(w => `
+        <tr data-id="${escapeAttr(w.id)}">
+          <td class="table-weapon-name">${escapeHtml(w.weapon_name)}</td>
+          <td class="table-weapon-code" title="${escapeAttr(w.weapon_code)}">${escapeHtml(w.weapon_code)}</td>
+          <td>
+            <div class="table-actions">
+              <button
+                class="btn-icon edit"
+                data-id="${escapeAttr(w.id)}"
+                data-name="${escapeAttr(w.weapon_name)}"
+                data-code="${escapeAttr(w.weapon_code)}"
+                title="Chỉnh sửa"
+                aria-label="Sửa ${escapeHtml(w.weapon_name)}"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button
+                class="btn-icon delete"
+                data-id="${escapeAttr(w.id)}"
+                data-name="${escapeAttr(w.weapon_name)}"
+                title="Xóa"
+                aria-label="Xóa ${escapeHtml(w.weapon_name)}"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6"/><path d="M14 11v6"/>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      // Edit buttons
+      tbody.querySelectorAll('.btn-icon.edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const { id, name, code } = btn.dataset;
+          startEdit(id, name, code);
+        });
+      });
+
+      // Delete buttons
+      tbody.querySelectorAll('.btn-icon.delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+          openDeleteModal(btn.dataset.id, btn.dataset.name);
+        });
+      });
+    }
+
+    // ============================================================
+    // FORM LOGIC
+    // ============================================================
+    function resetForm() {
+      document.getElementById('editingId').value = '';
+      document.getElementById('weaponName').value = '';
+      document.getElementById('weaponCode').value = '';
+      document.getElementById('formPanelTitle').textContent = 'Thêm súng mới';
+      document.getElementById('formSubmitBtn').textContent = 'Lưu';
+      clearFieldErrors();
+      hideFormAlert();
+    }
+
+    function startEdit(id, name, code) {
+      document.getElementById('editingId').value = id;
+      document.getElementById('weaponName').value = name;
+      document.getElementById('weaponCode').value = code;
+      document.getElementById('formPanelTitle').textContent = 'Chỉnh sửa súng';
+      document.getElementById('formSubmitBtn').textContent = 'Cập nhật';
+      clearFieldErrors();
+      hideFormAlert();
+      document.getElementById('weaponName').focus();
+      // On mobile, scroll form into view
+      document.querySelector('.admin-form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function clearFieldErrors() {
+      ['weaponName', 'weaponCode'].forEach(id => {
+        document.getElementById(id).classList.remove('error');
+      });
+      ['weaponNameError', 'weaponCodeError'].forEach(id => {
+        const el = document.getElementById(id);
+        el.textContent = '';
+        el.classList.remove('visible');
+      });
+    }
+
+    function setFieldError(fieldId, errorId, message) {
+      document.getElementById(fieldId).classList.add('error');
+      const err = document.getElementById(errorId);
+      err.textContent = message;
+      err.classList.add('visible');
+    }
+
+    document.getElementById('btnAddNew').addEventListener('click', () => {
+      resetForm();
+      document.getElementById('weaponName').focus();
+    });
+
+    document.getElementById('formCancelBtn').addEventListener('click', resetForm);
+
+    document.getElementById('weaponForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearFieldErrors();
+      hideFormAlert();
+
+      const name = document.getElementById('weaponName').value;
+      const code = document.getElementById('weaponCode').value;
+      const editingId = document.getElementById('editingId').value;
+
+      // Client-side validation (server validates too via RLS + constraints)
+      let valid = true;
+      if (!name.trim()) {
+        setFieldError('weaponName', 'weaponNameError', 'Tên súng không được để trống.');
+        valid = false;
+      } else if (name.trim().length > 200) {
+        setFieldError('weaponName', 'weaponNameError', 'Tên súng không được vượt quá 200 ký tự.');
+        valid = false;
+      }
+      if (!code.trim()) {
+        setFieldError('weaponCode', 'weaponCodeError', 'Code súng không được để trống.');
+        valid = false;
+      } else if (code.length > 5000) {
+        setFieldError('weaponCode', 'weaponCodeError', 'Code súng không được vượt quá 5000 ký tự.');
+        valid = false;
+      }
+      if (!valid) return;
+
+      const submitBtn = document.getElementById('formSubmitBtn');
+      const isEditing = !!editingId;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Đang lưu...';
+
+      try {
+        if (isEditing) {
+          await adminUpdateWeapon(editingId, name, code);
+          showToast('Cập nhật súng thành công!', 'success');
+        } else {
+          await adminInsertWeapon(name, code);
+          showToast('Thêm súng thành công!', 'success');
+        }
+        resetForm();
+        await loadWeapons();
+      } catch (err) {
+        showFormAlert(err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = isEditing ? 'Cập nhật' : 'Lưu';
+      }
+    });
+
+    // ============================================================
+    // DELETE MODAL
+    // ============================================================
+    const deleteModal = document.getElementById('deleteModal');
+
+    function openDeleteModal(id, name) {
+      deleteTargetId = id;
+      document.getElementById('deleteModalMessage').textContent =
+        `Bạn có chắc chắn muốn xóa "${name}"? Hành động này không thể hoàn tác.`;
+      deleteModal.classList.remove('hidden');
+      document.getElementById('modalConfirmBtn').focus();
+    }
+
+    function closeDeleteModal() {
+      deleteModal.classList.add('hidden');
+      deleteTargetId = null;
+    }
+
+    document.getElementById('modalCancelBtn').addEventListener('click', closeDeleteModal);
+
+    deleteModal.addEventListener('click', (e) => {
+      if (e.target === deleteModal) closeDeleteModal();
+    });
+
+    document.getElementById('modalConfirmBtn').addEventListener('click', async () => {
+      if (!deleteTargetId) return;
+
+      const confirmBtn = document.getElementById('modalConfirmBtn');
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Đang xóa...';
+
+      try {
+        await adminDeleteWeapon(deleteTargetId);
+        closeDeleteModal();
+        showToast('Đã xóa súng thành công!', 'success');
+        await loadWeapons();
+      } catch (err) {
+        showToast('Xóa thất bại: ' + err.message, 'error');
+        closeDeleteModal();
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Xóa';
+      }
+    });
+
+    // Keyboard: Escape closes modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !deleteModal.classList.contains('hidden')) {
+        closeDeleteModal();
+      }
+    });
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    loadWeapons();
+  </script>
+
+</body>
+</html>

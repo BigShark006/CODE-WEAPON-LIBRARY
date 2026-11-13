@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BIGSHARK WEAPON CODES - Kho code cấu hình súng Delta Force. Tìm kiếm và sao chép code súng nhanh chóng." />
+  <title>BIGSHARK WEAPON CODES - Delta Force</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>" />
+  <link rel="stylesheet" href="/src/css/main.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+      <div class="logo-block" aria-label="BIGSHARK WEAPON CODES">
+        <span class="logo-main">BIGSHARK</span>
+        <span class="logo-sub">WEAPON CODES</span>
+        <span class="header-badge">DELTA FORCE</span>
+      </div>
+      <div class="header-actions" id="headerActions">
+        <!-- Rendered by JS based on auth state -->
+        <a href="/admin/login.html" class="btn-admin-login" id="btnAdminLogin">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" role="main" aria-labelledby="heroTitle">
+    <h1 class="hero-title" id="heroTitle">
+      KHO CODE SÚNG<br/><span>DELTA FORCE</span>
+    </h1>
+    <p class="hero-desc">Tìm kiếm và sao chép code cấu hình súng nhanh chóng.</p>
+    <div class="hero-stats" aria-live="polite">
+      <span class="hero-stats-count" id="weaponCount">—</span>
+      <span class="hero-stats-label">cấu hình đang có</span>
+    </div>
+  </section>
+
+  <!-- SEARCH -->
+  <section class="search-section" aria-label="Tìm kiếm súng">
+    <div class="search-wrapper">
+      <span class="search-icon" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </span>
+      <input
+        type="search"
+        class="search-input"
+        id="searchInput"
+        placeholder="Tìm tên súng..."
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        aria-label="Tìm kiếm tên súng"
+      />
+      <button class="search-clear" id="searchClear" aria-label="Xóa tìm kiếm">✕</button>
+    </div>
+  </section>
+
+  <!-- WEAPON LIST -->
+  <section class="weapons-section" aria-label="Danh sách súng">
+    <!-- Loading state -->
+    <div class="state-message" id="stateLoading">
+      <div class="loading-spinner"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+
+    <!-- Error state -->
+    <div class="state-message" id="stateError" style="display:none">
+      <div class="state-icon">⚠️</div>
+      <h3>Không thể tải dữ liệu</h3>
+      <p id="errorMessage">Có lỗi xảy ra. Vui lòng thử lại sau.</p>
+    </div>
+
+    <!-- Empty state -->
+    <div class="state-message" id="stateEmpty" style="display:none">
+      <div class="state-icon">🔍</div>
+      <h3>Không tìm thấy kết quả</h3>
+      <p>Thử từ khóa khác hoặc xem tất cả súng.</p>
+    </div>
+
+    <!-- Weapon grid -->
+    <div class="weapons-grid" id="weaponsGrid" style="display:none" role="list"></div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div class="footer-logo">BIGSHARK WEAPON CODES</div>
+      <p class="footer-note">
+        Đây là dự án cộng đồng dành cho người chơi Delta Force.<br/>
+        Không phải website chính thức của nhà phát hành game.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Main JS -->
+  <script type="module">
+    import { fetchAllWeaponCodes, searchWeaponCodes, getWeaponCount, copyWeaponCode } from '/src/js/weapon-codes.js';
+    import { getSession, isAdmin, signOut } from '/src/js/auth.js';
+
+    // ============================================================
+    // TOAST
+    // ============================================================
+    function showToast(message, type = 'success', duration = 3000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icons = { success: '✓', error: '✕', warning: '⚠' };
+      toast.innerHTML = `<span>${icons[type] || '•'}</span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    // ============================================================
+    // AUTH HEADER
+    // ============================================================
+    async function initHeader() {
+      try {
+        const session = await getSession();
+        const headerActions = document.getElementById('headerActions');
+        if (session) {
+          const admin = await isAdmin();
+          if (admin) {
+            headerActions.innerHTML = `
+              <a href="/admin/index.html" class="btn-admin-panel">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Quản trị
+              </a>
+              <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+            `;
+            document.getElementById('btnLogout').addEventListener('click', async () => {
+              try {
+                await signOut();
+                location.reload();
+              } catch { showToast('Lỗi đăng xuất', 'error'); }
+            });
+          }
+        }
+      } catch (e) {
+        // Silently fail - not critical
+      }
+    }
+
+    // ============================================================
+    // RENDER WEAPONS
+    // ============================================================
+    function renderWeapons(weapons) {
+      const grid = document.getElementById('weaponsGrid');
+      const stateLoading = document.getElementById('stateLoading');
+      const stateError = document.getElementById('stateError');
+      const stateEmpty = document.getElementById('stateEmpty');
+
+      stateLoading.style.display = 'none';
+      stateError.style.display = 'none';
+      stateEmpty.style.display = 'none';
+
+      if (!weapons || weapons.length === 0) {
+        grid.style.display = 'none';
+        stateEmpty.style.display = 'block';
+        return;
+      }
+
+      grid.style.display = 'grid';
+      grid.innerHTML = weapons.map(w => `
+        <article class="weapon-card" role="listitem" data-id="${w.id}">
+          <h2 class="weapon-name">${escapeHtml(w.weapon_name)}</h2>
+          <div class="weapon-code-block">
+            <pre class="weapon-code" aria-label="Code súng ${escapeHtml(w.weapon_name)}">${escapeHtml(w.weapon_code)}</pre>
+          </div>
+          <button class="btn-copy" data-code="${escapeAttr(w.weapon_code)}" aria-label="Sao chép code ${escapeHtml(w.weapon_name)}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            SAO CHÉP CODE
+          </button>
+        </article>
+      `).join('');
+
+      // Attach copy listeners
+      grid.querySelectorAll('.btn-copy').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const code = btn.getAttribute('data-code');
+          const result = await copyWeaponCode(code);
+          if (result.success) {
+            btn.textContent = '✓ Đã sao chép!';
+            btn.classList.add('copied');
+            showToast(result.message, 'success');
+            setTimeout(() => {
+              btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> SAO CHÉP CODE`;
+              btn.classList.remove('copied');
+            }, 2000);
+          } else {
+            showToast(result.message, 'error');
+          }
+        });
+      });
+    }
+
+    function showError(message) {
+      document.getElementById('stateLoading').style.display = 'none';
+      document.getElementById('stateError').style.display = 'block';
+      document.getElementById('errorMessage').textContent = message;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function escapeAttr(str) {
+      return String(str).replace(/"/g, '&quot;');
+    }
+
+    // ============================================================
+    // SEARCH
+    // ============================================================
+    let searchTimer = null;
+    const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+
+    searchInput.addEventListener('input', () => {
+      const val = searchInput.value;
+      searchClear.classList.toggle('visible', val.length > 0);
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => loadWeapons(val), 250);
+    });
+
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      searchClear.classList.remove('visible');
+      loadWeapons('');
+      searchInput.focus();
+    });
+
+    // ============================================================
+    // LOAD DATA
+    // ============================================================
+    async function loadWeapons(query = '') {
+      try {
+        document.getElementById('stateLoading').style.display = 'block';
+        document.getElementById('stateError').style.display = 'none';
+        document.getElementById('stateEmpty').style.display = 'none';
+        document.getElementById('weaponsGrid').style.display = 'none';
+
+        const weapons = query.trim()
+          ? await searchWeaponCodes(query)
+          : await fetchAllWeaponCodes();
+
+        renderWeapons(weapons);
+      } catch (err) {
+        showError(
+          err.message.includes('cấu hình')
+            ? err.message
+            : 'Không kết nối được database. Vui lòng thử lại sau.'
+        );
+      }
+    }
+
+    async function loadCount() {
+      try {
+        const count = await getWeaponCount();
+        document.getElementById('weaponCount').textContent = count;
+      } catch { /* silent */ }
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    initHeader();
+    loadWeapons();
+    loadCount();
+  </script>
+
+</body>
+</html>

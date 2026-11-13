@@ -1,0 +1,17 @@
+{
+  "name": "bigshark-weapon-codes",
+  "version": "1.0.0",
+  "description": "BIGSHARK WEAPON CODES - Delta Force weapon configuration codes website",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}

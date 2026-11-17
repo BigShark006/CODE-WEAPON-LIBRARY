@@ -4,19 +4,27 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '').trim();
+const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error(
-    'Supabase chưa được cấu hình. Vui lòng kiểm tra file .env và đảm bảo đã đặt VITE_SUPABASE_URL và VITE_SUPABASE_ANON_KEY.'
-  );
+export const CONFIG_ERROR_MESSAGE =
+  'Supabase chưa được cấu hình. Vui lòng kiểm tra file .env và đảm bảo đã đặt VITE_SUPABASE_URL và VITE_SUPABASE_ANON_KEY.';
+
+export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+
+export const supabase = isSupabaseConfigured
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
+  : null;
+
+export function assertSupabaseConfigured() {
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error(CONFIG_ERROR_MESSAGE);
+  }
+  return supabase;
 }
-
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
-});

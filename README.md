@@ -39,31 +39,45 @@ Website lưu trữ và chia sẻ **code cấu hình súng** cho game **Delta For
    - Vào **Database → Extensions** → tìm `pg_trgm` → bật ON
 3. Copy toàn bộ nội dung file [`supabase/migrations/001_initial_schema.sql`](./supabase/migrations/001_initial_schema.sql)
 4. Paste vào SQL Editor → nhấn **Run**
+5. Chạy file `supabase/migrations/002_community_submissions.sql` (nếu chưa chạy).
+6. Chạy file `supabase/migrations/003_moderation_hardening.sql` để tối ưu lọc trạng thái đóng góp và chống trùng lặp khi duyệt.
+7. Chạy file `supabase/migrations/004_owner_moderator_roles.sql` để kích hoạt phân quyền 2 cấp `OWNER` và `MODERATOR`.
 
-Migration này tạo:
+Migration 001 tạo:
 - Bảng `weapon_codes` (id, weapon_name, weapon_code, timestamps)
 - Bảng `admin_roles` (xác định ai là admin)
 - Function `is_admin()` để check quyền phía server
 - Trigger tự cập nhật `updated_at`
 - Toàn bộ RLS policies
 
+Migration 002 bổ sung:
+- Metadata `game_mode` và `platform` cho code súng
+- Bảng `weapon_submissions` cho đóng góp công khai, mặc định chờ duyệt
+- RLS: khách chỉ được gửi đóng góp; chỉ admin đọc danh sách chờ duyệt
+- RPC `review_weapon_submission` để duyệt/từ chối an toàn và duyệt + thêm vào kho trong một transaction
+
 ---
 
-### Bước 3 — Tạo tài khoản Admin
+### Bước 3 — Tạo tài khoản Owner & Moderator
 
-**Chỉ làm qua Supabase Dashboard — KHÔNG tạo form đăng ký công khai.**
+**Chỉ tạo tài khoản qua Supabase Dashboard — KHÔNG tạo form đăng ký công khai.**
 
 1. Vào **Authentication → Users → Add user**
-2. Nhập email + mật khẩu admin → tick **"Auto Confirm User"** → **Create User**
+2. Nhập email + mật khẩu → tick **"Auto Confirm User"** → **Create User**
 3. Copy **User UID** (UUID) của user vừa tạo
 4. Vào **SQL Editor**, chạy:
 
 ```sql
-INSERT INTO public.admin_roles (user_id, granted_by)
-VALUES ('PASTE_USER_UUID_HERE', 'owner');
+-- Cấp quyền OWNER (Quản trị viên chính - toàn quyền, bao gồm xóa súng & phân quyền)
+INSERT INTO public.admin_roles (user_id, role, granted_by)
+VALUES ('PASTE_OWNER_UUID_HERE', 'OWNER', 'owner');
+
+-- Cấp quyền MODERATOR (Quản trị viên phụ - thêm/sửa súng & duyệt đóng góp, KHÔNG được xóa)
+INSERT INTO public.admin_roles (user_id, role, granted_by)
+VALUES ('PASTE_MOD_UUID_HERE', 'MODERATOR', 'owner');
 ```
 
-Thay `PASTE_USER_UUID_HERE` bằng UUID thực tế.
+> Sau khi có tài khoản **OWNER**, bạn cũng có thể đăng nhập `/admin/login.html` và cấp/thu hồi quyền **MODERATOR** trực tiếp trong mục **Quản lý tài khoản & phân quyền**.
 
 ---
 
@@ -79,6 +93,10 @@ Mở `.env` và điền:
 ```env
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Optional: link donate và URL ảnh QR do nền tảng donate cung cấp
+VITE_DONATE_URL=
+VITE_DONATE_QR_URL=
 ```
 
 ---
@@ -106,6 +124,8 @@ Truy cập:
    |-----|-------|
    | `VITE_SUPABASE_URL` | URL project Supabase |
    | `VITE_SUPABASE_ANON_KEY` | Anon key Supabase |
+   | `VITE_DONATE_URL` | (Tùy chọn) Link trang donate |
+   | `VITE_DONATE_QR_URL` | (Tùy chọn) URL ảnh QR donate |
 
 4. **Deploy** — Vercel tự động chạy `npm run build`
 
@@ -192,7 +212,8 @@ bigshark-weapon-codes/
 │       └── admin.js                 # adminFetch, insert, update, delete (admin only)
 ├── supabase/
 │   └── migrations/
-│       └── 001_initial_schema.sql   # Schema + RLS + triggers + policies
+│       ├── 001_initial_schema.sql
+│       └── 002_community_submissions.sql   # Schema + RLS + triggers + policies
 ├── dist/                            # Build output (git-ignored)
 ├── .env.example                     # Mẫu biến môi trường
 ├── .env                             # Biến thực tế (KHÔNG commit)

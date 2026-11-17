@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="BIGSHARK WEAPON CODES - Kho code cấu hình súng Delta Force. Tìm kiếm và sao chép code súng nhanh chóng." />
+  <meta name="description" content="BIGSHARK WEAPON CODES - Kho code cấu hình súng Delta Force. Tìm kiếm, sao chép và đóng góp code súng cộng đồng." />
   <title>BIGSHARK WEAPON CODES - Delta Force</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>" />
   <link rel="stylesheet" href="/src/css/main.css" />
@@ -13,11 +13,40 @@
   <!-- HEADER -->
   <header class="site-header" role="banner">
     <div class="header-inner">
-      <div class="logo-block" aria-label="BIGSHARK WEAPON CODES">
+      <a href="#catalog" class="logo-block" id="brandHomeLink" aria-label="BIGSHARK WEAPON CODES - Kho súng">
         <span class="logo-main">BIGSHARK</span>
         <span class="logo-sub">WEAPON CODES</span>
         <span class="header-badge">DELTA FORCE</span>
-      </div>
+      </a>
+
+      <!-- PRIMARY NAVIGATION TABS -->
+      <nav class="primary-tabs" role="tablist" aria-label="Điều hướng chính">
+        <a
+          href="#catalog"
+          class="primary-tab active"
+          id="tabBtnCatalog"
+          role="tab"
+          aria-selected="true"
+          aria-controls="tabPanelCatalog"
+          data-tab="catalog"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>KHO SÚNG</span>
+        </a>
+        <a
+          href="#contribute"
+          class="primary-tab"
+          id="tabBtnContribute"
+          role="tab"
+          aria-selected="false"
+          aria-controls="tabPanelContribute"
+          data-tab="contribute"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          <span>ĐÓNG GÓP</span>
+        </a>
+      </nav>
+
       <div class="header-actions" id="headerActions">
         <!-- Rendered by JS based on auth state -->
         <a href="/admin/login.html" class="btn-admin-login" id="btnAdminLogin">
@@ -28,64 +57,201 @@
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="hero" role="main" aria-labelledby="heroTitle">
-    <h1 class="hero-title" id="heroTitle">
-      KHO CODE SÚNG<br/><span>DELTA FORCE</span>
-    </h1>
-    <p class="hero-desc">Tìm kiếm và sao chép code cấu hình súng nhanh chóng.</p>
-    <div class="hero-stats" aria-live="polite">
-      <span class="hero-stats-count" id="weaponCount">—</span>
-      <span class="hero-stats-label">cấu hình đang có</span>
-    </div>
-  </section>
+  <main id="appMain">
+    <!-- ============================================================
+         TAB 1: KHO SÚNG (DEFAULT VIEW)
+         ============================================================ -->
+    <div id="tabPanelCatalog" class="tab-panel active" role="tabpanel" aria-labelledby="tabBtnCatalog">
+      <!-- HERO -->
+      <section class="hero" aria-labelledby="heroTitle">
+        <h1 class="hero-title" id="heroTitle">
+          KHO CODE SÚNG<br/><span>DELTA FORCE</span>
+        </h1>
+        <p class="hero-desc">Tìm kiếm và sao chép code cấu hình súng nhanh chóng.</p>
+        <div class="hero-stats" aria-live="polite">
+          <span class="hero-stats-count" id="weaponCount">—</span>
+          <span class="hero-stats-label">cấu hình đang có</span>
+        </div>
+      </section>
 
-  <!-- SEARCH -->
-  <section class="search-section" aria-label="Tìm kiếm súng">
-    <div class="search-wrapper">
-      <span class="search-icon" aria-hidden="true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      </span>
-      <input
-        type="search"
-        class="search-input"
-        id="searchInput"
-        placeholder="Tìm tên súng..."
-        autocomplete="off"
-        autocorrect="off"
-        autocapitalize="off"
-        spellcheck="false"
-        aria-label="Tìm kiếm tên súng"
-      />
-      <button class="search-clear" id="searchClear" aria-label="Xóa tìm kiếm">✕</button>
-    </div>
-  </section>
+      <!-- SEARCH & FILTERS -->
+      <section class="search-section" aria-label="Tìm kiếm súng">
+        <div class="search-wrapper">
+          <span class="search-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </span>
+          <input
+            type="search"
+            class="search-input"
+            id="searchInput"
+            placeholder="Tìm tên súng..."
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            aria-label="Tìm kiếm tên súng"
+          />
+          <button class="search-clear" id="searchClear" aria-label="Xóa tìm kiếm">✕</button>
+        </div>
+        <div class="filter-row" aria-label="Lọc cấu hình">
+          <select id="modeFilter" aria-label="Lọc chế độ chơi">
+            <option value="">Tất cả chế độ</option>
+            <option value="WARFARE">Warfare (WF)</option>
+            <option value="OPERATION">Operation (OP)</option>
+          </select>
+          <select id="platformFilter" aria-label="Lọc nền tảng">
+            <option value="">Tất cả nền tảng</option>
+            <option value="PC">PC</option>
+            <option value="MOBILE">Mobile</option>
+          </select>
+        </div>
+      </section>
 
-  <!-- WEAPON LIST -->
-  <section class="weapons-section" aria-label="Danh sách súng">
-    <!-- Loading state -->
-    <div class="state-message" id="stateLoading">
-      <div class="loading-spinner"></div>
-      <p>Đang tải dữ liệu...</p>
+      <!-- WEAPON LIST -->
+      <section class="weapons-section" aria-label="Danh sách súng">
+        <!-- Loading state -->
+        <div class="state-message" id="stateLoading">
+          <div class="loading-spinner"></div>
+          <p>Đang tải dữ liệu...</p>
+        </div>
+
+        <!-- Error state -->
+        <div class="state-message" id="stateError" style="display:none">
+          <div class="state-icon">⚠️</div>
+          <h3>Không thể tải dữ liệu</h3>
+          <p id="errorMessage">Có lỗi xảy ra. Vui lòng thử lại sau.</p>
+        </div>
+
+        <!-- Empty state -->
+        <div class="state-message" id="stateEmpty" style="display:none">
+          <div class="state-icon">🔍</div>
+          <h3>Không tìm thấy kết quả</h3>
+          <p>Thử từ khóa khác hoặc xem tất cả súng.</p>
+        </div>
+
+        <!-- Weapon grid -->
+        <div class="weapons-grid" id="weaponsGrid" style="display:none" role="list"></div>
+      </section>
     </div>
 
-    <!-- Error state -->
-    <div class="state-message" id="stateError" style="display:none">
-      <div class="state-icon">⚠️</div>
-      <h3>Không thể tải dữ liệu</h3>
-      <p id="errorMessage">Có lỗi xảy ra. Vui lòng thử lại sau.</p>
-    </div>
+    <!-- ============================================================
+         TAB 2: ĐÓNG GÓP & DONATE (DEDICATED VIEW)
+         ============================================================ -->
+    <div id="tabPanelContribute" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnContribute" hidden>
+      <section class="contribute-hero" aria-labelledby="contributePageTitle">
+        <span class="section-kicker">BIGSHARK COMMUNITY HUB</span>
+        <h1 class="hero-title" id="contributePageTitle">
+          ĐÓNG GÓP &amp; <span>ỦNG HỘ</span>
+        </h1>
+        <p class="hero-desc">Gửi code cấu hình súng của bạn cho cộng đồng Delta Force hoặc ủng hộ BigShark duy trì dự án.</p>
+      </section>
 
-    <!-- Empty state -->
-    <div class="state-message" id="stateEmpty" style="display:none">
-      <div class="state-icon">🔍</div>
-      <h3>Không tìm thấy kết quả</h3>
-      <p>Thử từ khóa khác hoặc xem tất cả súng.</p>
-    </div>
+      <div class="contribute-layout">
+        <!-- A. FORM ĐÓNG GÓP CODE SÚNG -->
+        <section class="community-section" aria-labelledby="contributeTitle">
+          <div class="community-card">
+            <div class="community-heading">
+              <div>
+                <span class="section-kicker">COMMUNITY SUBMISSION</span>
+                <h2 id="contributeTitle">GỬI CODE SÚNG MỚI</h2>
+                <p>Không cần đăng nhập. Code sau khi gửi sẽ được BigShark kiểm duyệt thủ công trước khi lên kho công khai.</p>
+              </div>
+              <span class="community-mark" aria-hidden="true">＋</span>
+            </div>
 
-    <!-- Weapon grid -->
-    <div class="weapons-grid" id="weaponsGrid" style="display:none" role="list"></div>
-  </section>
+            <form id="contributionForm" class="contribution-form" novalidate>
+              <div class="contribution-field">
+                <label for="contributionWeapon">Tên súng <span class="required-star">*</span></label>
+                <input
+                  id="contributionWeapon"
+                  name="weaponName"
+                  type="text"
+                  maxlength="200"
+                  placeholder="Ví dụ: M4A1, AK-12, Scar-H..."
+                  autocomplete="off"
+                  required
+                />
+              </div>
+
+              <div class="contribution-field">
+                <label for="contributionCode">Code súng <span class="required-star">*</span></label>
+                <textarea
+                  id="contributionCode"
+                  name="weaponCode"
+                  maxlength="5000"
+                  rows="4"
+                  placeholder="Dán toàn bộ chuỗi code cấu hình súng Delta Force vào đây..."
+                  required
+                ></textarea>
+              </div>
+
+              <div class="contribution-options">
+                <fieldset class="contribution-field">
+                  <legend>Chế độ chơi <span class="required-star">*</span></legend>
+                  <div class="choice-group" role="radiogroup" aria-label="Chọn một chế độ chơi">
+                    <label class="choice-option">
+                      <input type="radio" name="gameMode" value="WARFARE" checked />
+                      <span>Warfare (WF)</span>
+                    </label>
+                    <label class="choice-option">
+                      <input type="radio" name="gameMode" value="OPERATION" />
+                      <span>Operation (OP)</span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset class="contribution-field">
+                  <legend>Nền tảng <span class="required-star">*</span></legend>
+                  <div class="choice-group" role="radiogroup" aria-label="Chọn một nền tảng">
+                    <label class="choice-option">
+                      <input type="radio" name="platform" value="PC" checked />
+                      <span>PC</span>
+                    </label>
+                    <label class="choice-option">
+                      <input type="radio" name="platform" value="MOBILE" />
+                      <span>Mobile</span>
+                    </label>
+                  </div>
+                </fieldset>
+              </div>
+
+              <div class="contribution-footer">
+                <p>Mỗi bài đóng góp chọn <strong>1 chế độ chơi</strong> và <strong>1 nền tảng</strong>.</p>
+                <button class="btn-contribute" type="submit" id="contributionSubmit">
+                  GỬI ĐÓNG GÓP <span>↗</span>
+                </button>
+              </div>
+
+              <div class="contribution-feedback" id="contributionFeedback" role="status" aria-live="polite"></div>
+            </form>
+          </div>
+        </section>
+
+        <!-- B. KHU VỰC DONATE -->
+        <section class="donate-section" aria-labelledby="donateTitle">
+          <div class="donate-card">
+            <div class="donate-copy">
+              <span class="section-kicker">KEEP THE COMMUNITY ALIVE</span>
+              <h2 id="donateTitle">ỦNG HỘ <span>BIGSHARK</span></h2>
+              <p>Mọi sự ủng hộ của anh em đều giúp BigShark duy trì server, cập nhật kho code súng mới và phát triển thêm tính năng cho cộng đồng Delta Force.</p>
+              <a class="donate-link" id="donateLink" href="#" target="_blank" rel="noopener noreferrer" hidden>
+                MỞ TRANG DONATE ↗
+              </a>
+            </div>
+
+            <div class="donate-qr-wrap" id="donateQrWrap" hidden>
+              <img id="donateQr" alt="Mã QR Donate ủng hộ BigShark" />
+              <span>QUÉT MÃ QR ĐỂ ỦNG HỘ</span>
+            </div>
+
+            <div class="donate-setup-note" id="donateSetupNote">
+              Khu vực Donate hiện chưa được cấu hình URL hoặc mã QR. BigShark sẽ sớm cập nhật thông tin ủng hộ tại đây.
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
 
   <!-- FOOTER -->
   <footer class="site-footer" role="contentinfo">
@@ -105,16 +271,17 @@
   <script type="module">
     import { fetchAllWeaponCodes, searchWeaponCodes, getWeaponCount, copyWeaponCode } from '/src/js/weapon-codes.js';
     import { getSession, isAdmin, signOut } from '/src/js/auth.js';
+    import { submitWeaponContribution } from '/src/js/community.js';
 
     // ============================================================
     // TOAST
     // ============================================================
-    function showToast(message, type = 'success', duration = 3000) {
+    function showToast(message, type = 'success', duration = 3200) {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
       const icons = { success: '✓', error: '✕', warning: '⚠' };
-      toast.innerHTML = `<span>${icons[type] || '•'}</span><span>${message}</span>`;
+      toast.innerHTML = `<span>${icons[type] || '•'}</span><span>${escapeHtml(message)}</span>`;
       container.appendChild(toast);
       setTimeout(() => {
         toast.style.opacity = '0';
@@ -123,6 +290,74 @@
         setTimeout(() => toast.remove(), 300);
       }, duration);
     }
+
+    // ============================================================
+    // TAB NAVIGATION & HASH ROUTING (/#catalog & /#contribute)
+    // ============================================================
+    const tabButtons = {
+      catalog: document.getElementById('tabBtnCatalog'),
+      contribute: document.getElementById('tabBtnContribute'),
+    };
+    const tabPanels = {
+      catalog: document.getElementById('tabPanelCatalog'),
+      contribute: document.getElementById('tabPanelContribute'),
+    };
+
+    function resolveTabFromHash(hashValue = window.location.hash) {
+      const normalized = String(hashValue || '').replace(/^#\/?/, '').trim().toLowerCase();
+      return normalized === 'contribute' ? 'contribute' : 'catalog';
+    }
+
+    function activateTab(tabName, { updateHistory = true, scrollTop = false } = {}) {
+      const targetTab = tabName === 'contribute' ? 'contribute' : 'catalog';
+
+      Object.entries(tabButtons).forEach(([key, btn]) => {
+        const isActive = key === targetTab;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+
+      Object.entries(tabPanels).forEach(([key, panel]) => {
+        const isActive = key === targetTab;
+        panel.hidden = !isActive;
+        panel.classList.toggle('active', isActive);
+      });
+
+      if (updateHistory) {
+        const desiredHash = `#${targetTab}`;
+        if (window.location.hash !== desiredHash) {
+          history.pushState({ tab: targetTab }, '', desiredHash);
+        }
+      }
+
+      if (scrollTop) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    Object.values(tabButtons).forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = btn.getAttribute('data-tab');
+        activateTab(target, { updateHistory: true, scrollTop: true });
+      });
+    });
+
+    document.getElementById('brandHomeLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      activateTab('catalog', { updateHistory: true, scrollTop: true });
+    });
+
+    window.addEventListener('popstate', () => {
+      activateTab(resolveTabFromHash(), { updateHistory: false, scrollTop: false });
+    });
+
+    window.addEventListener('hashchange', () => {
+      activateTab(resolveTabFromHash(), { updateHistory: false, scrollTop: false });
+    });
+
+    // Apply initial tab immediately on page load (supports direct /#contribute and defaults to catalog)
+    activateTab(resolveTabFromHash(), { updateHistory: false, scrollTop: false });
 
     // ============================================================
     // AUTH HEADER
@@ -149,7 +384,7 @@
             });
           }
         }
-      } catch (e) {
+      } catch {
         // Silently fail - not critical
       }
     }
@@ -157,6 +392,18 @@
     // ============================================================
     // RENDER WEAPONS
     // ============================================================
+    function formatModeLabel(mode) {
+      if (mode === 'WARFARE') return 'Warfare (WF)';
+      if (mode === 'OPERATION') return 'Operation (OP)';
+      return mode || '';
+    }
+
+    function formatPlatformLabel(platform) {
+      if (platform === 'MOBILE') return 'Mobile';
+      if (platform === 'PC') return 'PC';
+      return platform || '';
+    }
+
     function renderWeapons(weapons) {
       const grid = document.getElementById('weaponsGrid');
       const stateLoading = document.getElementById('stateLoading');
@@ -175,8 +422,9 @@
 
       grid.style.display = 'grid';
       grid.innerHTML = weapons.map(w => `
-        <article class="weapon-card" role="listitem" data-id="${w.id}">
+        <article class="weapon-card" role="listitem" data-id="${escapeAttr(w.id)}">
           <h2 class="weapon-name">${escapeHtml(w.weapon_name)}</h2>
+          ${(w.game_mode || w.platform) ? `<div class="weapon-tags">${w.game_mode ? `<span>${escapeHtml(formatModeLabel(w.game_mode))}</span>` : ''}${w.platform ? `<span>${escapeHtml(formatPlatformLabel(w.platform))}</span>` : ''}</div>` : ''}
           <div class="weapon-code-block">
             <pre class="weapon-code" aria-label="Code súng ${escapeHtml(w.weapon_name)}">${escapeHtml(w.weapon_code)}</pre>
           </div>
@@ -217,11 +465,11 @@
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
     function escapeAttr(str) {
-      return String(str).replace(/"/g, '&quot;');
+      return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     // ============================================================
-    // SEARCH
+    // SEARCH & FILTER
     // ============================================================
     let searchTimer = null;
     const searchInput = document.getElementById('searchInput');
@@ -233,6 +481,9 @@
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => loadWeapons(val), 250);
     });
+
+    document.getElementById('modeFilter').addEventListener('change', () => loadWeapons(searchInput.value));
+    document.getElementById('platformFilter').addEventListener('change', () => loadWeapons(searchInput.value));
 
     searchClear.addEventListener('click', () => {
       searchInput.value = '';
@@ -251,10 +502,13 @@
         document.getElementById('stateEmpty').style.display = 'none';
         document.getElementById('weaponsGrid').style.display = 'none';
 
-        const weapons = query.trim()
+        let weapons = query.trim()
           ? await searchWeaponCodes(query)
           : await fetchAllWeaponCodes();
-
+        const mode = document.getElementById('modeFilter').value;
+        const platform = document.getElementById('platformFilter').value;
+        if (mode) weapons = weapons.filter(w => w.game_mode === mode);
+        if (platform) weapons = weapons.filter(w => w.platform === platform);
         renderWeapons(weapons);
       } catch (err) {
         showError(
@@ -271,6 +525,117 @@
         document.getElementById('weaponCount').textContent = count;
       } catch { /* silent */ }
     }
+
+    // ============================================================
+    // COMMUNITY CONTRIBUTION FORM
+    // ============================================================
+    const contributionForm = document.getElementById('contributionForm');
+    contributionForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = document.getElementById('contributionSubmit');
+      const feedback = document.getElementById('contributionFeedback');
+      const formData = new FormData(contributionForm);
+
+      const weaponName = String(formData.get('weaponName') || '').trim();
+      const weaponCode = String(formData.get('weaponCode') || '').trim();
+      const gameMode = String(formData.get('gameMode') || '').trim();
+      const platform = String(formData.get('platform') || '').trim();
+
+      feedback.textContent = '';
+      feedback.className = 'contribution-feedback';
+
+      if (!weaponName) {
+        feedback.textContent = '✕ Vui lòng nhập tên súng trước khi gửi.';
+        feedback.classList.add('error');
+        document.getElementById('contributionWeapon').focus();
+        return;
+      }
+
+      if (!weaponCode) {
+        feedback.textContent = '✕ Vui lòng nhập code súng trước khi gửi.';
+        feedback.classList.add('error');
+        document.getElementById('contributionCode').focus();
+        return;
+      }
+
+      if (!['WARFARE', 'OPERATION'].includes(gameMode)) {
+        feedback.textContent = '✕ Vui lòng chọn một chế độ chơi: Warfare (WF) hoặc Operation (OP).';
+        feedback.classList.add('error');
+        return;
+      }
+
+      if (!['PC', 'MOBILE'].includes(platform)) {
+        feedback.textContent = '✕ Vui lòng chọn một nền tảng: PC hoặc Mobile.';
+        feedback.classList.add('error');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'ĐANG GỬI...';
+
+      try {
+        await submitWeaponContribution({
+          weaponName,
+          weaponCode,
+          gameMode,
+          platform,
+        });
+        contributionForm.reset();
+        feedback.textContent = '✓ Gửi đóng góp thành công! Code đang ở trạng thái chờ duyệt và sẽ hiển thị sau khi Admin phê duyệt.';
+        feedback.classList.add('success');
+        showToast('Đã gửi đóng góp thành công!', 'success');
+      } catch (error) {
+        feedback.textContent = '✕ ' + error.message;
+        feedback.classList.add('error');
+        showToast(error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.innerHTML = 'GỬI ĐÓNG GÓP <span>↗</span>';
+      }
+    });
+
+    // ============================================================
+    // DONATE CONFIGURATION (VITE_DONATE_URL & VITE_DONATE_QR_URL)
+    // ============================================================
+    function initDonateSection() {
+      const donateUrl = (import.meta.env.VITE_DONATE_URL || '').trim();
+      const donateQrUrl = (import.meta.env.VITE_DONATE_QR_URL || '').trim();
+      const link = document.getElementById('donateLink');
+      const wrap = document.getElementById('donateQrWrap');
+      const img = document.getElementById('donateQr');
+      const note = document.getElementById('donateSetupNote');
+
+      let hasUrl = false;
+      let hasQr = false;
+
+      if (donateUrl) {
+        link.href = donateUrl;
+        link.hidden = false;
+        hasUrl = true;
+      }
+
+      if (donateQrUrl) {
+        img.onerror = () => {
+          wrap.hidden = true;
+          hasQr = false;
+          if (!hasUrl) {
+            note.textContent = 'Không tải được ảnh QR Donate. Vui lòng kiểm tra lại cấu hình VITE_DONATE_QR_URL.';
+            note.hidden = false;
+          }
+        };
+        img.src = donateQrUrl;
+        wrap.hidden = false;
+        hasQr = true;
+      }
+
+      if (hasUrl || hasQr) {
+        note.hidden = true;
+      } else {
+        note.hidden = false;
+      }
+    }
+
+    initDonateSection();
 
     // ============================================================
     // INIT

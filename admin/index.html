@@ -13,7 +13,7 @@
   <!-- Page Loading Overlay -->
   <div class="page-loading" id="pageLoading">
     <div class="loading-spinner"></div>
-    <p style="color:var(--text-secondary);font-size:0.875rem">Đang xác thực...</p>
+    <p style="color:var(--text-secondary);font-size:0.875rem">Đang xác thực quyền truy cập...</p>
   </div>
 
   <div class="admin-page" id="adminContent" style="display:none">
@@ -21,12 +21,13 @@
     <!-- ADMIN HEADER -->
     <header class="admin-header">
       <div class="admin-header-inner">
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
           <div class="logo-block">
             <span class="logo-main" style="font-size:1.1rem">BIGSHARK</span>
             <span class="logo-sub">WEAPON CODES</span>
           </div>
           <span class="admin-title">Khu vực quản trị</span>
+          <span class="role-badge" id="currentRoleBadge" aria-live="polite"></span>
         </div>
         <div style="display:flex;align-items:center;gap:10px">
           <a href="/" class="btn btn-secondary" style="font-size:0.8rem;padding:7px 14px">
@@ -42,13 +43,50 @@
     <!-- ADMIN MAIN -->
     <main class="admin-main">
 
+      <!-- Moderator permission notice (shown only for MODERATOR) -->
+      <div class="moderator-banner" id="moderatorNoticeBanner" style="display:none" role="status">
+        <strong>Chế độ Moderator (Quản trị viên phụ):</strong>
+        Bạn có quyền thêm code súng mới, chỉnh sửa code súng hiện có và duyệt/từ chối đóng góp cộng đồng.
+        Thao tác xóa code súng và quản lý phân quyền chỉ dành cho <strong>Owner</strong>.
+      </div>
+
       <!-- Stats -->
       <div class="admin-stats">
         <div class="stat-card">
           <div class="stat-value" id="statTotal">—</div>
-          <div class="stat-label">Tổng số súng</div>
+          <div class="stat-label">Tổng số súng công khai</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statPendingSubmissions">—</div>
+          <div class="stat-label">Đóng góp chờ duyệt</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statCurrentRole" style="font-size:1.25rem;padding-top:4px">—</div>
+          <div class="stat-label">Vai trò tài khoản</div>
         </div>
       </div>
+
+      <!-- Community submissions moderation (OWNER & MODERATOR) -->
+      <section class="submission-panel" aria-labelledby="submissionsPanelTitle">
+        <div class="panel-header">
+          <h2 class="panel-title" id="submissionsPanelTitle">
+            Quản lý đóng góp cộng đồng <span class="pending-count" id="pendingCount">0</span>
+          </h2>
+          <div class="submission-controls">
+            <select id="submissionStatusFilter" class="admin-select" aria-label="Lọc trạng thái đóng góp">
+              <option value="PENDING" selected>Chờ duyệt (Pending)</option>
+              <option value="APPROVED">Đã duyệt (Approved)</option>
+              <option value="REJECTED">Đã từ chối (Rejected)</option>
+              <option value="ALL">Tất cả trạng thái</option>
+            </select>
+            <button class="btn btn-secondary" id="refreshSubmissions" type="button" style="font-size:0.8rem;padding:7px 14px">
+              ↻ Làm mới
+            </button>
+          </div>
+        </div>
+        <div id="submissionsLoading" class="submission-empty">Đang tải đóng góp...</div>
+        <div id="submissionsList" class="submissions-list"></div>
+      </section>
 
       <!-- Global alert -->
       <div class="alert alert-hidden" id="mainAlert" role="alert" style="margin-bottom:16px"></div>
@@ -59,7 +97,7 @@
         <!-- ======= Weapons List ======= -->
         <div class="admin-list-panel">
           <div class="panel-header">
-            <h2 class="panel-title">Danh sách súng</h2>
+            <h2 class="panel-title">Danh sách súng công khai</h2>
             <button class="btn btn-primary" id="btnAddNew" style="font-size:0.8rem;padding:8px 16px">
               + Thêm mới
             </button>
@@ -76,7 +114,7 @@
             <table class="weapons-table" id="weaponsTable" style="display:none">
               <thead>
                 <tr>
-                  <th style="width:35%">Tên súng</th>
+                  <th style="width:36%">Tên súng</th>
                   <th>Code</th>
                   <th style="text-align:right;width:100px">Thao tác</th>
                 </tr>
@@ -126,6 +164,25 @@
               <div class="form-error" id="weaponCodeError"></div>
             </div>
 
+            <div class="admin-meta-grid">
+              <div class="form-group">
+                <label class="form-label" for="weaponMode">Chế độ chơi</label>
+                <select class="form-input" id="weaponMode">
+                  <option value="">Không phân loại</option>
+                  <option value="WARFARE">Warfare (WF)</option>
+                  <option value="OPERATION">Operation (OP)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="weaponPlatform">Nền tảng</label>
+                <select class="form-input" id="weaponPlatform">
+                  <option value="">Không phân loại</option>
+                  <option value="PC">PC</option>
+                  <option value="MOBILE">Mobile</option>
+                </select>
+              </div>
+            </div>
+
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" id="formSubmitBtn">Lưu</button>
               <button type="button" class="btn btn-secondary" id="formCancelBtn">Hủy</button>
@@ -134,10 +191,59 @@
         </div>
 
       </div>
+
+      <!-- ======= OWNER ONLY: Role & Account Management ======= -->
+      <section class="role-panel" id="roleManagementSection" style="display:none" aria-labelledby="rolePanelTitle">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" id="rolePanelTitle">Quản lý tài khoản &amp; phân quyền (Chỉ Owner)</h2>
+            <p class="role-panel-desc">
+              Tạo tài khoản mới trong <strong>Supabase Dashboard → Authentication → Users</strong> trước, sau đó nhập Email hoặc User UID tại đây để cấp quyền <strong>MODERATOR</strong> hoặc <strong>OWNER</strong>.
+            </p>
+          </div>
+          <button class="btn btn-secondary" id="refreshRolesBtn" type="button" style="font-size:0.8rem;padding:7px 14px">
+            ↻ Làm mới
+          </button>
+        </div>
+
+        <form id="roleAssignForm" class="role-assign-form" novalidate>
+          <input
+            type="text"
+            class="form-input"
+            id="roleUserIdentifier"
+            placeholder="Nhập Email hoặc User UID của tài khoản..."
+            autocomplete="off"
+            required
+          />
+          <select class="admin-select role-select" id="roleSelect" aria-label="Chọn cấp quyền">
+            <option value="MODERATOR" selected>MODERATOR (Quản trị phụ - không được xóa)</option>
+            <option value="OWNER">OWNER (Quản trị chính - toàn quyền)</option>
+          </select>
+          <button type="submit" class="btn btn-primary" id="roleAssignBtn">Cấp / Cập nhật quyền</button>
+        </form>
+
+        <div class="alert alert-hidden" id="roleAlert" role="alert" style="margin-top:12px"></div>
+
+        <div class="weapons-table-wrapper" style="margin-top:16px">
+          <div id="rolesLoading" class="submission-empty">Đang tải danh sách phân quyền...</div>
+          <table class="weapons-table" id="rolesTable" style="display:none">
+            <thead>
+              <tr>
+                <th>Tài khoản (Email / UID)</th>
+                <th style="width:150px">Vai trò</th>
+                <th style="width:180px">Cấp bởi</th>
+                <th style="text-align:right;width:160px">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="rolesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
     </main>
   </div>
 
-  <!-- ======= Delete Confirm Modal ======= -->
+  <!-- ======= Delete Confirm Modal (OWNER ONLY) ======= -->
   <div class="modal-overlay hidden" id="deleteModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
     <div class="modal-card">
       <h3 class="modal-title" id="deleteModalTitle">Xác nhận xóa</h3>
@@ -155,8 +261,20 @@
   <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
   <script type="module">
-    import { requireAdmin, signOut, onAuthStateChange } from '/src/js/auth.js';
-    import { adminFetchWeapons, adminInsertWeapon, adminUpdateWeapon, adminDeleteWeapon } from '/src/js/admin.js';
+    import { requireAdmin, signOut, onAuthStateChange, getSession, ADMIN_ROLES } from '/src/js/auth.js';
+    import { copyWeaponCode } from '/src/js/weapon-codes.js';
+    import {
+      adminFetchWeapons,
+      adminInsertWeapon,
+      adminUpdateWeapon,
+      adminDeleteWeapon,
+      adminFetchSubmissions,
+      adminGetPendingSubmissionCount,
+      adminReviewSubmission,
+      adminFetchRoles,
+      adminSetUserRole,
+      adminRemoveUserRole,
+    } from '/src/js/admin.js';
 
     // ============================================================
     // TOAST NOTIFICATIONS
@@ -199,6 +317,16 @@
       document.getElementById('formAlert').className = 'alert alert-hidden';
     }
 
+    function showRoleAlert(message, type = 'error') {
+      const el = document.getElementById('roleAlert');
+      el.textContent = message;
+      el.className = `alert alert-${type}`;
+    }
+
+    function hideRoleAlert() {
+      document.getElementById('roleAlert').className = 'alert alert-hidden';
+    }
+
     // ============================================================
     // UTILS
     // ============================================================
@@ -215,25 +343,65 @@
       return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
+    function formatMode(mode) {
+      if (mode === 'WARFARE') return 'Warfare (WF)';
+      if (mode === 'OPERATION') return 'Operation (OP)';
+      return '';
+    }
+
+    function formatPlatform(platform) {
+      if (platform === 'MOBILE') return 'Mobile';
+      if (platform === 'PC') return 'PC';
+      return '';
+    }
+
+    function formatStatusBadge(status) {
+      const map = {
+        PENDING: { label: 'Chờ duyệt', cls: 'status-pending' },
+        APPROVED: { label: 'Đã duyệt', cls: 'status-approved' },
+        REJECTED: { label: 'Từ chối', cls: 'status-rejected' },
+      };
+      const entry = map[status] || { label: status, cls: 'status-pending' };
+      return `<span class="submission-status ${entry.cls}">${escapeHtml(entry.label)}</span>`;
+    }
+
     // ============================================================
-    // AUTH GUARD — must run before revealing UI
+    // AUTH & ROLE GUARD — must run before revealing UI
     // ============================================================
-    let isAuthorized = false;
+    let currentRole = null;
     try {
-      isAuthorized = await requireAdmin('/admin/login.html');
+      currentRole = await requireAdmin('/admin/login.html');
     } catch (e) {
       window.location.href = '/admin/login.html';
     }
-    if (!isAuthorized) {
-      // requireAdmin handles redirect
+    if (!currentRole) {
       throw new Error('Not authorized');
+    }
+
+    const isOwner = currentRole === ADMIN_ROLES.OWNER;
+    const currentSession = await getSession();
+    const currentUserId = currentSession?.user?.id || null;
+
+    // Configure role-specific UI indicators
+    const roleBadgeEl = document.getElementById('currentRoleBadge');
+    const statRoleEl = document.getElementById('statCurrentRole');
+    if (isOwner) {
+      roleBadgeEl.textContent = 'OWNER · TOÀN QUYỀN';
+      roleBadgeEl.className = 'role-badge role-owner';
+      statRoleEl.textContent = 'OWNER';
+      document.getElementById('roleManagementSection').style.display = 'block';
+    } else {
+      roleBadgeEl.textContent = 'MODERATOR · QUẢN TRỊ PHỤ';
+      roleBadgeEl.className = 'role-badge role-moderator';
+      statRoleEl.textContent = 'MODERATOR';
+      document.getElementById('moderatorNoticeBanner').style.display = 'block';
     }
 
     // Reveal admin UI
     document.getElementById('pageLoading').classList.add('hidden');
     document.getElementById('adminContent').style.display = 'block';
 
-    // Watch for session expiry (e.g. token revoked)
+    // Watch for session expiry
     onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
         window.location.href = '/admin/login.html';
@@ -289,7 +457,15 @@
 
       tbody.innerHTML = weapons.map(w => `
         <tr data-id="${escapeAttr(w.id)}">
-          <td class="table-weapon-name">${escapeHtml(w.weapon_name)}</td>
+          <td class="table-weapon-name">
+            <div>${escapeHtml(w.weapon_name)}</div>
+            ${(w.game_mode || w.platform) ? `
+              <div class="table-meta-tags">
+                ${w.game_mode ? `<span>${escapeHtml(formatMode(w.game_mode))}</span>` : ''}
+                ${w.platform ? `<span>${escapeHtml(formatPlatform(w.platform))}</span>` : ''}
+              </div>
+            ` : ''}
+          </td>
           <td class="table-weapon-code" title="${escapeAttr(w.weapon_code)}">${escapeHtml(w.weapon_code)}</td>
           <td>
             <div class="table-actions">
@@ -298,6 +474,8 @@
                 data-id="${escapeAttr(w.id)}"
                 data-name="${escapeAttr(w.weapon_name)}"
                 data-code="${escapeAttr(w.weapon_code)}"
+                data-mode="${escapeAttr(w.game_mode || '')}"
+                data-platform="${escapeAttr(w.platform || '')}"
                 title="Chỉnh sửa"
                 aria-label="Sửa ${escapeHtml(w.weapon_name)}"
               >
@@ -306,64 +484,71 @@
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
               </button>
-              <button
-                class="btn-icon delete"
-                data-id="${escapeAttr(w.id)}"
-                data-name="${escapeAttr(w.weapon_name)}"
-                title="Xóa"
-                aria-label="Xóa ${escapeHtml(w.weapon_name)}"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                  <path d="M10 11v6"/><path d="M14 11v6"/>
-                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                </svg>
-              </button>
+              ${isOwner ? `
+                <button
+                  class="btn-icon delete"
+                  data-id="${escapeAttr(w.id)}"
+                  data-name="${escapeAttr(w.weapon_name)}"
+                  title="Xóa (Chỉ Owner)"
+                  aria-label="Xóa ${escapeHtml(w.weapon_name)}"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    <path d="M10 11v6"/><path d="M14 11v6"/>
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                  </svg>
+                </button>
+              ` : ''}
             </div>
           </td>
         </tr>
       `).join('');
 
-      // Edit buttons
+      // Edit buttons (OWNER & MODERATOR)
       tbody.querySelectorAll('.btn-icon.edit').forEach(btn => {
         btn.addEventListener('click', () => {
-          const { id, name, code } = btn.dataset;
-          startEdit(id, name, code);
+          const { id, name, code, mode, platform } = btn.dataset;
+          startEdit(id, name, code, mode, platform);
         });
       });
 
-      // Delete buttons
-      tbody.querySelectorAll('.btn-icon.delete').forEach(btn => {
-        btn.addEventListener('click', () => {
-          openDeleteModal(btn.dataset.id, btn.dataset.name);
+      // Delete buttons (OWNER ONLY)
+      if (isOwner) {
+        tbody.querySelectorAll('.btn-icon.delete').forEach(btn => {
+          btn.addEventListener('click', () => {
+            openDeleteModal(btn.dataset.id, btn.dataset.name);
+          });
         });
-      });
+      }
     }
 
     // ============================================================
-    // FORM LOGIC
+    // FORM LOGIC (OWNER & MODERATOR)
     // ============================================================
     function resetForm() {
       document.getElementById('editingId').value = '';
       document.getElementById('weaponName').value = '';
       document.getElementById('weaponCode').value = '';
+      document.getElementById('weaponMode').value = '';
+      document.getElementById('weaponPlatform').value = '';
       document.getElementById('formPanelTitle').textContent = 'Thêm súng mới';
       document.getElementById('formSubmitBtn').textContent = 'Lưu';
       clearFieldErrors();
       hideFormAlert();
     }
 
-    function startEdit(id, name, code) {
+    function startEdit(id, name, code, mode = '', platform = '') {
       document.getElementById('editingId').value = id;
       document.getElementById('weaponName').value = name;
       document.getElementById('weaponCode').value = code;
+      document.getElementById('weaponMode').value = mode || '';
+      document.getElementById('weaponPlatform').value = platform || '';
       document.getElementById('formPanelTitle').textContent = 'Chỉnh sửa súng';
       document.getElementById('formSubmitBtn').textContent = 'Cập nhật';
       clearFieldErrors();
       hideFormAlert();
       document.getElementById('weaponName').focus();
-      // On mobile, scroll form into view
       document.querySelector('.admin-form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -399,9 +584,10 @@
 
       const name = document.getElementById('weaponName').value;
       const code = document.getElementById('weaponCode').value;
+      const mode = document.getElementById('weaponMode').value || null;
+      const platform = document.getElementById('weaponPlatform').value || null;
       const editingId = document.getElementById('editingId').value;
 
-      // Client-side validation (server validates too via RLS + constraints)
       let valid = true;
       if (!name.trim()) {
         setFieldError('weaponName', 'weaponNameError', 'Tên súng không được để trống.');
@@ -426,10 +612,10 @@
 
       try {
         if (isEditing) {
-          await adminUpdateWeapon(editingId, name, code);
+          await adminUpdateWeapon(editingId, name, code, mode, platform);
           showToast('Cập nhật súng thành công!', 'success');
         } else {
-          await adminInsertWeapon(name, code);
+          await adminInsertWeapon(name, code, mode, platform);
           showToast('Thêm súng thành công!', 'success');
         }
         resetForm();
@@ -443,11 +629,15 @@
     });
 
     // ============================================================
-    // DELETE MODAL
+    // DELETE MODAL (OWNER ONLY)
     // ============================================================
     const deleteModal = document.getElementById('deleteModal');
 
     function openDeleteModal(id, name) {
+      if (!isOwner) {
+        showToast('Chỉ tài khoản OWNER mới có quyền xóa code súng.', 'error');
+        return;
+      }
       deleteTargetId = id;
       document.getElementById('deleteModalMessage').textContent =
         `Bạn có chắc chắn muốn xóa "${name}"? Hành động này không thể hoàn tác.`;
@@ -467,6 +657,11 @@
     });
 
     document.getElementById('modalConfirmBtn').addEventListener('click', async () => {
+      if (!isOwner) {
+        closeDeleteModal();
+        showToast('Chỉ tài khoản OWNER mới có quyền xóa code súng.', 'error');
+        return;
+      }
       if (!deleteTargetId) return;
 
       const confirmBtn = document.getElementById('modalConfirmBtn');
@@ -479,7 +674,7 @@
         showToast('Đã xóa súng thành công!', 'success');
         await loadWeapons();
       } catch (err) {
-        showToast('Xóa thất bại: ' + err.message, 'error');
+        showToast(err.message, 'error');
         closeDeleteModal();
       } finally {
         confirmBtn.disabled = false;
@@ -487,7 +682,6 @@
       }
     });
 
-    // Keyboard: Escape closes modal
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !deleteModal.classList.contains('hidden')) {
         closeDeleteModal();
@@ -495,9 +689,248 @@
     });
 
     // ============================================================
+    // COMMUNITY SUBMISSION MODERATION (OWNER & MODERATOR)
+    // ============================================================
+    const submissionStatusFilter = document.getElementById('submissionStatusFilter');
+
+    async function loadSubmissions() {
+      const loading = document.getElementById('submissionsLoading');
+      const list = document.getElementById('submissionsList');
+      const selectedStatus = submissionStatusFilter.value || 'PENDING';
+
+      loading.style.display = 'block';
+      loading.textContent = 'Đang tải đóng góp...';
+      list.innerHTML = '';
+
+      try {
+        const [submissions, pendingCount] = await Promise.all([
+          adminFetchSubmissions(selectedStatus),
+          adminGetPendingSubmissionCount(),
+        ]);
+
+        document.getElementById('pendingCount').textContent = pendingCount;
+        document.getElementById('statPendingSubmissions').textContent = pendingCount;
+
+        loading.style.display = submissions.length ? 'none' : 'block';
+        if (!submissions.length) {
+          loading.textContent =
+            selectedStatus === 'PENDING'
+              ? 'Chưa có đóng góp nào đang chờ duyệt.'
+              : 'Không có đóng góp nào ở trạng thái này.';
+          return;
+        }
+
+        list.innerHTML = submissions.map(item => `
+          <article class="submission-item" data-submission-id="${escapeAttr(item.id)}">
+            <div class="submission-item-head">
+              <div class="submission-title-group">
+                <strong>${escapeHtml(item.weapon_name)}</strong>
+                <span class="submission-meta-pill">${escapeHtml(formatMode(item.game_mode))}</span>
+                <span class="submission-meta-pill">${escapeHtml(formatPlatform(item.platform))}</span>
+              </div>
+              ${formatStatusBadge(item.status)}
+            </div>
+            <pre>${escapeHtml(item.weapon_code)}</pre>
+            <div class="submission-item-foot">
+              <small>Gửi lúc: ${new Date(item.created_at).toLocaleString('vi-VN')}${item.reviewed_at ? ` · Duyệt lúc: ${new Date(item.reviewed_at).toLocaleString('vi-VN')}` : ''}</small>
+              <div class="submission-actions">
+                <button type="button" class="btn btn-secondary btn-copy-sub" data-code="${escapeAttr(item.weapon_code)}">
+                  Sao chép
+                </button>
+                ${item.status === 'PENDING' ? `
+                  <button type="button" class="btn btn-primary btn-review-approve" data-id="${escapeAttr(item.id)}">
+                    Duyệt
+                  </button>
+                  <button type="button" class="btn btn-danger btn-review-reject" data-id="${escapeAttr(item.id)}">
+                    Từ chối
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          </article>
+        `).join('');
+
+        list.querySelectorAll('.btn-copy-sub').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const res = await copyWeaponCode(btn.dataset.code);
+            showToast(res.message, res.success ? 'success' : 'error');
+          });
+        });
+
+        list.querySelectorAll('.btn-review-approve').forEach(btn => {
+          btn.addEventListener('click', () => reviewSubmission(btn.dataset.id, 'APPROVED', btn));
+        });
+
+        list.querySelectorAll('.btn-review-reject').forEach(btn => {
+          btn.addEventListener('click', () => reviewSubmission(btn.dataset.id, 'REJECTED', btn));
+        });
+      } catch (error) {
+        loading.style.display = 'block';
+        loading.textContent = 'Không tải được đóng góp. Hãy chạy migration SQL trên Supabase và kiểm tra quyền: ' + error.message;
+      }
+    }
+
+    async function reviewSubmission(id, decision, button) {
+      const card = button.closest('.submission-item');
+      const actionButtons = card ? card.querySelectorAll('button') : [button];
+      actionButtons.forEach(b => { b.disabled = true; });
+
+      const label =
+        decision === 'APPROVED'
+          ? 'Đã duyệt và đưa code vào kho súng công khai!'
+          : 'Đã từ chối đóng góp.';
+
+      try {
+        await adminReviewSubmission(id, decision);
+        showToast(label, 'success');
+        await Promise.all([loadSubmissions(), loadWeapons()]);
+      } catch (error) {
+        showToast(error.message, 'error');
+        actionButtons.forEach(b => { b.disabled = false; });
+      }
+    }
+
+    submissionStatusFilter.addEventListener('change', loadSubmissions);
+    document.getElementById('refreshSubmissions').addEventListener('click', loadSubmissions);
+
+    // ============================================================
+    // OWNER ONLY: ROLE MANAGEMENT
+    // ============================================================
+    async function loadRoles() {
+      if (!isOwner) return;
+      const loading = document.getElementById('rolesLoading');
+      const table = document.getElementById('rolesTable');
+      const tbody = document.getElementById('rolesTableBody');
+
+      loading.style.display = 'block';
+      loading.textContent = 'Đang tải danh sách phân quyền...';
+      table.style.display = 'none';
+      hideRoleAlert();
+
+      try {
+        const roles = await adminFetchRoles();
+        loading.style.display = 'none';
+        table.style.display = 'table';
+
+        tbody.innerHTML = roles.map(r => {
+          const isSelf = currentUserId && r.user_id === currentUserId;
+          const badgeClass = r.role === 'OWNER' ? 'role-owner' : 'role-moderator';
+          const toggleTargetRole = r.role === 'OWNER' ? 'MODERATOR' : 'OWNER';
+          const toggleLabel = r.role === 'OWNER' ? 'Hạ xuống Mod' : 'Nâng lên Owner';
+
+          return `
+            <tr>
+              <td>
+                <div style="font-weight:600">${escapeHtml(r.email)} ${isSelf ? '<span class="self-tag">(Bạn)</span>' : ''}</div>
+                <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-secondary)">${escapeHtml(r.user_id)}</div>
+              </td>
+              <td>
+                <span class="role-badge ${badgeClass}">${escapeHtml(r.role)}</span>
+              </td>
+              <td style="font-size:0.78rem;color:var(--text-secondary)">
+                <div>${escapeHtml(r.granted_by || 'system')}</div>
+                <div>${new Date(r.granted_at).toLocaleDateString('vi-VN')}</div>
+              </td>
+              <td>
+                <div class="table-actions">
+                  ${isSelf ? '<span style="font-size:0.75rem;color:var(--text-secondary)">Tài khoản hiện tại</span>' : `
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-toggle-role"
+                      data-uid="${escapeAttr(r.user_id)}"
+                      data-role="${escapeAttr(toggleTargetRole)}"
+                      style="min-height:32px;padding:4px 10px;font-size:0.72rem"
+                    >${escapeHtml(toggleLabel)}</button>
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-revoke-role"
+                      data-uid="${escapeAttr(r.user_id)}"
+                      data-email="${escapeAttr(r.email)}"
+                      style="min-height:32px;padding:4px 10px;font-size:0.72rem"
+                    >Thu hồi</button>
+                  `}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        tbody.querySelectorAll('.btn-toggle-role').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            try {
+              await adminSetUserRole(btn.dataset.uid, btn.dataset.role);
+              showToast(`Đã cập nhật quyền thành ${btn.dataset.role}!`, 'success');
+              await loadRoles();
+            } catch (err) {
+              showRoleAlert(err.message);
+              btn.disabled = false;
+            }
+          });
+        });
+
+        tbody.querySelectorAll('.btn-revoke-role').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!window.confirm(`Thu hồi quyền quản trị của tài khoản "${btn.dataset.email}"?`)) return;
+            btn.disabled = true;
+            try {
+              await adminRemoveUserRole(btn.dataset.uid);
+              showToast('Đã thu hồi quyền quản trị.', 'success');
+              await loadRoles();
+            } catch (err) {
+              showRoleAlert(err.message);
+              btn.disabled = false;
+            }
+          });
+        });
+      } catch (err) {
+        loading.style.display = 'block';
+        loading.textContent = 'Chưa tải được danh sách phân quyền (hãy chạy migration 004 trên Supabase): ' + err.message;
+      }
+    }
+
+    if (isOwner) {
+      document.getElementById('refreshRolesBtn').addEventListener('click', loadRoles);
+      document.getElementById('roleAssignForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideRoleAlert();
+        const identifierInput = document.getElementById('roleUserIdentifier');
+        const roleSelect = document.getElementById('roleSelect');
+        const assignBtn = document.getElementById('roleAssignBtn');
+
+        const identifier = identifierInput.value.trim();
+        const targetRole = roleSelect.value;
+
+        if (!identifier) {
+          showRoleAlert('Vui lòng nhập Email hoặc User UID của tài khoản.');
+          identifierInput.focus();
+          return;
+        }
+
+        assignBtn.disabled = true;
+        assignBtn.textContent = 'Đang xử lý...';
+        try {
+          await adminSetUserRole(identifier, targetRole);
+          identifierInput.value = '';
+          showToast(`Đã cấp quyền ${targetRole} thành công!`, 'success');
+          await loadRoles();
+        } catch (err) {
+          showRoleAlert(err.message);
+        } finally {
+          assignBtn.disabled = false;
+          assignBtn.textContent = 'Cấp / Cập nhật quyền';
+        }
+      });
+    }
+
+    // ============================================================
     // INIT
     // ============================================================
     loadWeapons();
+    loadSubmissions();
+    if (isOwner) {
+      loadRoles();
+    }
   </script>
 
 </body>

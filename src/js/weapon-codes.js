@@ -1,15 +1,16 @@
 // src/js/weapon-codes.js
 // Public-facing weapon codes data operations
 
-import { supabase } from './supabase-client.js';
+import { assertSupabaseConfigured } from './supabase-client.js';
 
 /**
  * Fetch all weapon codes, ordered by weapon_name
  */
 export async function fetchAllWeaponCodes() {
-  const { data, error } = await supabase
+  const sb = assertSupabaseConfigured();
+  const { data, error } = await sb
     .from('weapon_codes')
-    .select('id, weapon_name, weapon_code, created_at')
+    .select('id, weapon_name, weapon_code, game_mode, platform, created_at')
     .order('weapon_name', { ascending: true });
 
   if (error) throw error;
@@ -25,11 +26,12 @@ export async function searchWeaponCodes(query) {
     return fetchAllWeaponCodes();
   }
 
+  const sb = assertSupabaseConfigured();
   const sanitizedQuery = query.trim();
 
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('weapon_codes')
-    .select('id, weapon_name, weapon_code, created_at')
+    .select('id, weapon_name, weapon_code, game_mode, platform, created_at')
     .ilike('weapon_name', `%${sanitizedQuery}%`)
     .order('weapon_name', { ascending: true });
 
@@ -41,7 +43,8 @@ export async function searchWeaponCodes(query) {
  * Get total count of weapon codes
  */
 export async function getWeaponCount() {
-  const { count, error } = await supabase
+  const sb = assertSupabaseConfigured();
+  const { count, error } = await sb
     .from('weapon_codes')
     .select('*', { count: 'exact', head: true });
 
